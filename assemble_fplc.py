@@ -79,7 +79,7 @@ if __name__ == '__main__':
     parser.add_argument('-m', '--minfrac', default = 0, help = 'The lowest fraction to highlight in the plot. Default is not to fill them in', dest = 'min_frac', type = int)
     parser.add_argument('-a', '--maxfrac', default = 0, help = 'The highest fraction to hightlight in the plot. Default is not to fill them in', dest = 'max_frac', type = int)
     parser.add_argument('-l', '--lowml', default = 5, help = 'Low x-limit in mL. Default 5', type = int)
-    parser.add_argument('-e', '--highml', default = 20, help = 'High x-limit in mL. Default 5', type = int)
+    parser.add_argument('-e', '--highml', default = 20, help = 'High x-limit in mL. Default 20', type = int)
     parser.add_argument('-q', '--quiet', help = 'Don\'t print messages about progress', action = 'store_true')
 
     if len(sys.argv) == 1:
