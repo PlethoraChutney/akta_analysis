@@ -78,6 +78,8 @@ if __name__ == '__main__':
     parser.add_argument('-s', '--skiprows', default = 1, help = 'Number of rows to skip reading. Default 1', action = 'store', dest = 'skip_rows', type = int)
     parser.add_argument('-m', '--minfrac', default = 0, help = 'The lowest fraction to highlight in the plot. Default is not to fill them in', dest = 'min_frac', type = int)
     parser.add_argument('-a', '--maxfrac', default = 0, help = 'The highest fraction to hightlight in the plot. Default is not to fill them in', dest = 'max_frac', type = int)
+    parser.add_argument('-l', '--lowml', default = 5, help = 'Low x-limit in mL. Default 5', type = int)
+    parser.add_argument('-e', '--highml', default = 20, help = 'High x-limit in mL. Default 5', type = int)
     parser.add_argument('-q', '--quiet', help = 'Don\'t print messages about progress', action = 'store_true')
 
     if len(sys.argv) == 1:
@@ -91,6 +93,8 @@ if __name__ == '__main__':
     skip_rows = args.skip_rows
     min_frac = str(args.min_frac)
     max_frac = str(args.max_frac)
+    low_ml = str(args.lowml)
+    high_ml = str(args.highml)
     quiet = args.quiet
 
     if os.path.isfile(outfile):
@@ -102,7 +106,7 @@ if __name__ == '__main__':
     compiled.to_csv(outfile, index = False)
     if not quiet:
         print('Generating plots...')
-    subprocess.run(['Rscript', '--quiet', 'plot_traces.R', outfile, min_frac, max_frac])
+    subprocess.run(['Rscript', '--quiet', 'plot_traces.R', outfile, min_frac, max_frac, low_ml, high_ml])
     if os.path.isfile(os.path.join(outdir, 'Rplots.pdf')) :
         os.remove(os.path.join(outdir, 'Rplots.pdf'))
     if not quiet:
