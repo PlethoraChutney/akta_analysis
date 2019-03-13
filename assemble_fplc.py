@@ -76,8 +76,8 @@ if __name__ == '__main__':
     parser.add_argument('-d', '--directory', default = os.getcwd(), help = 'Which directory to pull all .csv files from. Default is the current directory')
     parser.add_argument('-o', '--output', default = os.path.join(os.getcwd(), 'fplcs.csv'), help = 'Where to write the compiled traces. Default is fplcs.csv in the current directory')
     parser.add_argument('-s', '--skiprows', default = 1, help = 'Number of rows to skip reading. Default 1', action = 'store', dest = 'skip_rows', type = int)
-    parser.add_argument('-m', '--minfrac', default = 1, help = 'The lowest fraction to highlight in the plot. Default is 1', dest = 'min_frac', type = int)
-    parser.add_argument('-a', '--maxfrac', default = 50, help = 'The highest fraction to hightlight in the plot. Default is 50', dest = 'max_frac', type = int)
+    parser.add_argument('-m', '--minfrac', default = 0, help = 'The lowest fraction to highlight in the plot. Default is not to fill them in', dest = 'min_frac', type = int)
+    parser.add_argument('-a', '--maxfrac', default = 0, help = 'The highest fraction to hightlight in the plot. Default is not to fill them in', dest = 'max_frac', type = int)
     parser.add_argument('-q', '--quiet', help = 'Don\'t print messages about progress', action = 'store_true')
 
     if len(sys.argv) == 1:
