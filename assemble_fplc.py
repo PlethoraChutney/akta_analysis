@@ -61,6 +61,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description = 'A script to collect FPLC traces from GE AKTA FPLCs')
     parser.add_argument('-d', '--directory', default = os.getcwd(), help = 'Which directory to pull all .csv files from. Default is the current directory')
     parser.add_argument('-o', '--output', default = os.path.join(os.getcwd(), 'fplcs.csv'), help = 'Where to write the compiled traces. Default is fplcs.csv in the current directory')
+    parser.add_argument('-s', '--skiprows', default = 1, help = 'Number of rows to skip reading. Default 1', action = 'store', dest = 'skip_rows', type = int)
 
     if len(sys.argv) == 1:
         parser.print_help(sys.stderr)
@@ -69,6 +70,7 @@ if __name__ == '__main__':
 
     dir = os.path.normpath(args.directory)
     outfile = os.path.normpath(args.output)
+    skip_rows = args.skip_rows
     file_list = get_file_list(dir)
     compiled = append_chroms(file_list)
     compiled.to_csv(outfile, index = False)
