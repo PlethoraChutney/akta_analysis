@@ -63,8 +63,8 @@ if __name__ == '__main__':
     parser.add_argument('-o', '--output', default = os.path.join(os.getcwd(), 'fplcs.csv'), help = 'Where to write the compiled traces. Default is fplcs.csv in the current directory')
 
     if len(sys.argv) == 1:
-		parser.print_help(sys.stderr)
-		sys.exit(0)
+        parser.print_help(sys.stderr)
+        sys.exit(0)
     args = parser.parse_args()
 
     dir = os.path.normpath(args.directory)
