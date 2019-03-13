@@ -26,6 +26,12 @@ def append_chroms(file_list, quiet):
         fplc_trace = pd.read_csv(file, skiprows = skip_rows, header = [1], encoding = 'utf-16-le', delimiter = '\t', engine = 'python', )
         fplc_trace = fplc_trace.filter(regex = '(ml|mAU$|mS/cm$|\%$|Fraction)')
         columns = fplc_trace.columns
+
+        # The AKTA exports data with several different ml columns, each with their
+        # own name (like ml.2, ml.3, etc.). These are mL axes for each channel.
+        # Unfortunately, they are different for each channel! So we need to keep
+        # each and know which channel it goes with. Additionally, since users
+        # don't have to export every channel every time, we can't hard code positions
         renaming = {}
         if 'mAU' in columns:
             au_column = columns.get_loc('mAU')
@@ -53,6 +59,7 @@ def append_chroms(file_list, quiet):
         if '%' in columns:
             perc = pd.melt(fplc_trace, id_vars = 'mL_percentB', value_vars = '%', var_name = 'Channel', value_name = 'Signal')
             perc = perc.rename(columns = {'mL_percentB':'mL'}).dropna()
+            perc['Channel'] = '%_B'
             long_trace = long_trace.append(perc)
         if "Fraction" in columns:
             frac = fplc_trace.filter(regex = 'rac').dropna()
@@ -76,10 +83,8 @@ if __name__ == '__main__':
     parser.add_argument('-d', '--directory', default = os.getcwd(), help = 'Which directory to pull all .csv files from. Default is the current directory')
     parser.add_argument('-o', '--output', default = os.path.join(os.getcwd(), 'fplcs.csv'), help = 'Where to write the compiled traces. Default is fplcs.csv in the current directory')
     parser.add_argument('-s', '--skiprows', default = 1, help = 'Number of rows to skip reading. Default 1', action = 'store', dest = 'skip_rows', type = int)
-    parser.add_argument('-m', '--minfrac', default = 0, help = 'The lowest fraction to highlight in the plot. Default is not to fill them in', dest = 'min_frac', type = int)
-    parser.add_argument('-a', '--maxfrac', default = 0, help = 'The highest fraction to hightlight in the plot. Default is not to fill them in', dest = 'max_frac', type = int)
-    parser.add_argument('-l', '--lowml', default = 5, help = 'Low x-limit in mL. Default 5', type = int)
-    parser.add_argument('-e', '--highml', default = 20, help = 'High x-limit in mL. Default 20', type = int)
+    parser.add_argument('-f', '--fractions', nargs = 2, default = ['0', '0'], help = 'Inclusive range of fractions to fill in. Default is not to fill any.')
+    parser.add_argument('-m', '--ml', nargs = 2, default = ['5', '20'], help = 'Inclusive range for x-axis, in mL. Default is 5 to 20')
     parser.add_argument('-q', '--quiet', help = 'Don\'t print messages about progress', action = 'store_true')
 
     if len(sys.argv) == 1:
@@ -91,21 +96,21 @@ if __name__ == '__main__':
     outfile = os.path.normpath(args.output)
     outdir = os.path.dirname(outfile)
     skip_rows = args.skip_rows
-    min_frac = str(args.min_frac)
-    max_frac = str(args.max_frac)
-    low_ml = str(args.lowml)
-    high_ml = str(args.highml)
+    min_frac = str(args.fractions[0])
+    max_frac = str(args.fractions[1])
+    low_ml = str(args.ml[0])
+    high_ml = str(args.ml[1])
     quiet = args.quiet
 
     if os.path.isfile(outfile):
-        print('I don\'t want to overwrite a file. Please move or delete it first.')
+        print(f'I don\'t want to overwrite the file {outfile}. Please move or delete it first.')
         sys.exit()
 
     file_list = get_file_list(dir, quiet)
     compiled = append_chroms(file_list, quiet)
     compiled.to_csv(outfile, index = False)
     if not quiet:
-        print('Generating plots...')
+        print(f'Generating plots ({low_ml} to {high_ml}mL, fractions {min_frac} to {max_frac})...')
     subprocess.run(['Rscript', '--quiet', 'plot_traces.R', outfile, min_frac, max_frac, low_ml, high_ml])
     if os.path.isfile(os.path.join(outdir, 'Rplots.pdf')) :
         os.remove(os.path.join(outdir, 'Rplots.pdf'))
