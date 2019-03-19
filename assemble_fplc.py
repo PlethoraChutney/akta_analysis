@@ -6,6 +6,7 @@ import argparse
 import subprocess
 
 skip_rows = 1
+script_path = dir_path = os.path.dirname(os.path.realpath(__file__))
 
 def get_file_list(directory, quiet):
     file_list = []
@@ -111,7 +112,7 @@ if __name__ == '__main__':
     compiled.to_csv(outfile, index = False)
     if not quiet:
         print(f'Generating plots ({low_ml} to {high_ml}mL, fractions {min_frac} to {max_frac})...')
-    subprocess.run(['Rscript', '--quiet', 'plot_traces.R', outfile, min_frac, max_frac, low_ml, high_ml])
+    subprocess.run(['Rscript', '--quiet', os.path.join(script_path, 'plot_traces.R'), outfile, min_frac, max_frac, low_ml, high_ml])
     if os.path.isfile(os.path.join(outdir, 'Rplots.pdf')) :
         os.remove(os.path.join(outdir, 'Rplots.pdf'))
     if not quiet:
