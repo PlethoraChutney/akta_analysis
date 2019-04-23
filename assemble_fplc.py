@@ -10,9 +10,14 @@ script_path = dir_path = os.path.dirname(os.path.realpath(__file__))
 
 def get_file_list(directory, quiet):
     file_list = []
-    for file in os.listdir(directory):
-        if file.endswith(".csv"):
-            file_list.append(os.path.join(directory, file))
+
+    if os.path.isdir(directory):
+        for file in os.listdir(directory):
+            if file.endswith(".csv"):
+                file_list.append(os.path.normpath(os.path.join(directory, file)))
+    elif os.path.isfile(directory):
+        if directory.endswith('.csv'):
+            file_list.append(os.path.normpath(directory))
 
     if not quiet:
         print(f'Found {len(file_list)} files')
@@ -81,7 +86,7 @@ def append_chroms(file_list, quiet):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description = 'A script to collect FPLC traces from GE AKTA FPLCs')
-    parser.add_argument('-d', '--directory', default = os.getcwd(), help = 'Which directory to pull all .csv files from. Default is the current directory')
+    parser.add_argument('directory', default = os.getcwd(), help = 'Which directory to pull all .csv files from, or a particular .csv file. Default is all files in the current directory')
     parser.add_argument('-o', '--output', default = os.path.join(os.getcwd(), 'fplcs.csv'), help = 'Where to write the compiled traces. Default is fplcs.csv in the current directory')
     parser.add_argument('-s', '--skiprows', default = 1, help = 'Number of rows to skip reading. Default 1', action = 'store', dest = 'skip_rows', type = int)
     parser.add_argument('-f', '--fractions', nargs = 2, default = ['0', '0'], help = 'Inclusive range of fractions to fill in. Default is not to fill any.')
@@ -104,8 +109,8 @@ if __name__ == '__main__':
     quiet = args.quiet
 
     if os.path.isfile(outfile):
-        print(f'I don\'t want to overwrite the file {outfile}. Please move or delete it first.')
-        sys.exit()
+        if input(f'Are you sure you want to overwrite the file {os.path.abspath(outfile)}?\n[Y]es / [N]o\n').upper() != 'Y':
+            sys.exit(0)
 
     file_list = get_file_list(dir, quiet)
     compiled = append_chroms(file_list, quiet)

@@ -12,14 +12,28 @@ high_ml <- as.integer(args[5])
 data <- read_csv(args[1], col_types = 'dcddcci') %>% 
   mutate(inst_frac = if_else(inst_frac < min_frac, 'Waste', if_else(inst_frac > max_frac, 'Waste', as.character(inst_frac))))
 
+if (length(levels(factor(data$Sample))) > 1) {
 data %>%
-  ggplot(aes(x = mL, y = Signal, color = Channel)) +
-  facet_grid(Sample ~ ., scales = 'free') +
+  filter(Channel == 'mAU' & mL > low_ml & mL < high_ml) %>% 
+  group_by(Sample) %>% 
+  mutate(Normalized = ((Signal - min(Signal)) / (max(Signal) - min(Signal)))) %>% 
+  gather(key = Normalized, value = Signal, Signal, Normalized) %>% 
+  ungroup() %>% 
+  ggplot(aes(x = mL, y = Signal, color = Sample)) +
+  facet_grid(Normalized ~ ., scales = 'free') +
   theme_light() +
-  coord_cartesian(xlim = c(low_ml, high_ml)) +
   scale_color_viridis_d() +
   geom_line()
-ggsave(filename = file.path(out.dir, paste('all_channels_', no.ext, '.pdf', sep = '')), width = 6, height = 4)
+ggsave(filename = file.path(out.dir, paste('all_samples_', no.ext, '.pdf', sep = '')), width = 8, height = 5)
+} else {
+  data %>%
+    ggplot(aes(x = mL, y = Signal, color = Channel)) +
+    theme_light() +
+    coord_cartesian(xlim = c(low_ml, high_ml)) +
+    scale_color_viridis_d() +
+    geom_line()
+  ggsave(filename = file.path(out.dir, paste('all_channels_', no.ext, '.pdf', sep = '')), width = 6, height = 4)
+}
 
 if (max_frac == 0) {
   data %>% 
