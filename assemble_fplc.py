@@ -4,6 +4,7 @@ import sys
 import os
 import argparse
 import subprocess
+import shutil
 
 skip_rows = 1
 script_path = dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -92,6 +93,7 @@ if __name__ == '__main__':
     parser.add_argument('-f', '--fractions', nargs = 2, default = ['0', '0'], help = 'Inclusive range of fractions to fill in. Default is not to fill any.')
     parser.add_argument('-m', '--ml', nargs = 2, default = ['5', '20'], help = 'Inclusive range for x-axis, in mL. Default is 5 to 20')
     parser.add_argument('-q', '--quiet', help = 'Don\'t print messages about progress', action = 'store_true')
+    parser.add_argument('--copy-manual', help = 'Copy the manual plotting Rscript for further tweaking', action = 'store_true')
 
     if len(sys.argv) == 1:
         parser.print_help(sys.stderr)
@@ -99,14 +101,19 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     dir = os.path.normpath(args.directory)
-    outfile = os.path.normpath(args.output)
+    outfile = os.path.abspath(args.output)
     outdir = os.path.dirname(outfile)
+    if outfile[-4:] != '.csv':
+        print('Please include the name of the file in outfile, i.e., \'path/to/[name].csv\'')
+        sys.exit(1)
+
     skip_rows = args.skip_rows
     min_frac = str(args.fractions[0])
     max_frac = str(args.fractions[1])
     low_ml = str(args.ml[0])
     high_ml = str(args.ml[1])
     quiet = args.quiet
+    copy_manual = args.copy_manual
 
     if os.path.isfile(outfile):
         if input(f'Are you sure you want to overwrite the file {os.path.abspath(outfile)}?\n[Y]es / [N]o\n').upper() != 'Y':
@@ -120,5 +127,10 @@ if __name__ == '__main__':
     subprocess.run(['Rscript', '--quiet', os.path.join(script_path, 'plot_traces.R'), outfile, min_frac, max_frac, low_ml, high_ml])
     if os.path.isfile(os.path.join(outdir, 'Rplots.pdf')) :
         os.remove(os.path.join(outdir, 'Rplots.pdf'))
+
+    if copy_manual:
+        if not quiet:
+            print('Copying manual RScript...')
+        shutil.copyfile(os.path.join(script_path, 'manual_plot_traces.R'), os.path.join(outdir, 'manual_plot_traces.R'))
     if not quiet:
         print('Done.')
