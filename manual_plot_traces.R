@@ -3,7 +3,7 @@ library(ggplot2)
 library(devEMF)
 
 min_frac <- 2
-max_frac <- 10
+max_frac <- 29
 low_ml <- 5
 high_ml <- 25
 

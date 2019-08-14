@@ -88,7 +88,7 @@ def append_chroms(file_list, quiet):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description = 'A script to collect FPLC traces from GE AKTA FPLCs')
     parser.add_argument('directory', default = os.getcwd(), help = 'Which directory to pull all .csv files from, or a particular .csv file. Default is all files in the current directory')
-    parser.add_argument('-o', '--output', default = os.path.join(os.getcwd(), 'fplcs.csv'), help = 'Where to write the compiled traces. Default is fplcs.csv in the current directory')
+    parser.add_argument('-o', '--output', help = 'Where to write the compiled traces. Default is fplcs.csv in the input directory')
     parser.add_argument('-s', '--skiprows', default = 1, help = 'Number of rows to skip reading. Default 1', action = 'store', dest = 'skip_rows', type = int)
     parser.add_argument('-f', '--fractions', nargs = 2, default = ['0', '0'], help = 'Inclusive range of fractions to fill in. Default is not to fill any.')
     parser.add_argument('-m', '--ml', nargs = 2, default = ['5', '20'], help = 'Inclusive range for x-axis, in mL. Default is 5 to 20')
@@ -100,8 +100,8 @@ if __name__ == '__main__':
         sys.exit(0)
     args = parser.parse_args()
 
-    dir = os.path.normpath(args.directory)
-    outfile = os.path.abspath(args.output)
+    dir = os.path.abspath(args.directory)
+    outfile = os.path.abspath(args.output) if args.output else os.path.join(os.path.abspath(dir), 'fplcs.csv')
     outdir = os.path.dirname(outfile)
     if outfile[-4:] != '.csv':
         print('Please include the name of the file in outfile, i.e., \'path/to/[name].csv\'')
