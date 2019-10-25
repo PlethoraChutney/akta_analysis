@@ -94,6 +94,8 @@ if __name__ == '__main__':
     parser.add_argument('-m', '--ml', nargs = 2, default = ['5', '20'], help = 'Inclusive range for x-axis, in mL. Default is 5 to 20')
     parser.add_argument('-q', '--quiet', help = 'Don\'t print messages about progress', action = 'store_true')
     parser.add_argument('--copy-manual', help = 'Copy the manual plotting Rscript for further tweaking', action = 'store_true')
+    parser.add_argument('--no-plots', help = 'Don\'t make R plots.', action = 'store_true')
+    parser.add_argument('--wide-table', help= 'Save an additional table that is in \'wide\' format.', action = 'store_true')
 
     if len(sys.argv) == 1:
         parser.print_help(sys.stderr)
@@ -114,6 +116,8 @@ if __name__ == '__main__':
     high_ml = str(args.ml[1])
     quiet = args.quiet
     copy_manual = args.copy_manual
+    no_plots = args.no_plots
+    wide_table = args.wide_table
 
     if os.path.isfile(outfile):
         if input(f'Are you sure you want to overwrite the file {os.path.abspath(outfile)}?\n[Y]es / [N]o\n').upper() != 'Y':
@@ -122,11 +126,15 @@ if __name__ == '__main__':
     file_list = get_file_list(dir, quiet)
     compiled = append_chroms(file_list, quiet)
     compiled.to_csv(outfile, index = False)
-    if not quiet:
-        print(f'Generating plots ({low_ml} to {high_ml}mL, fractions {min_frac} to {max_frac})...')
-    subprocess.run(['Rscript', '--quiet', os.path.join(script_path, 'plot_traces.R'), outfile, min_frac, max_frac, low_ml, high_ml])
-    if os.path.isfile(os.path.join(outdir, 'Rplots.pdf')) :
-        os.remove(os.path.join(outdir, 'Rplots.pdf'))
+    if wide_table:
+        compiled.pivot('mL', 'Channel', 'Signal').to_csv(outfile[:-4] + '_wide.csv')
+
+    if not no_plots:
+        if not quiet:
+            print(f'Generating plots ({low_ml} to {high_ml}mL, fractions {min_frac} to {max_frac})...')
+        subprocess.run(['Rscript', '--quiet', os.path.join(script_path, 'plot_traces.R'), outfile, min_frac, max_frac, low_ml, high_ml])
+        if os.path.isfile(os.path.join(outdir, 'Rplots.pdf')) :
+            os.remove(os.path.join(outdir, 'Rplots.pdf'))
 
     if copy_manual:
         if not quiet:
