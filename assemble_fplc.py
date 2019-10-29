@@ -102,13 +102,8 @@ if __name__ == '__main__':
         sys.exit(0)
     args = parser.parse_args()
 
-    dir = os.path.abspath(args.directory)
-    outfile = os.path.abspath(args.output) if args.output else os.path.join(os.path.abspath(dir), 'fplcs.csv')
-    outdir = os.path.dirname(outfile)
-    if outfile[-4:] != '.csv':
-        print('Please include the name of the file in outfile, i.e., \'path/to/[name].csv\'')
-        sys.exit(1)
-
+    dir = args.directory if not os.path.isfile(args.directory) else os.path.dirname(args.directory)
+    dir = os.path.abspath(dir)
     skip_rows = args.skip_rows
     min_frac = str(args.fractions[0])
     max_frac = str(args.fractions[1])
@@ -118,6 +113,12 @@ if __name__ == '__main__':
     copy_manual = args.copy_manual
     no_plots = args.no_plots
     wide_table = args.wide_table
+
+    outfile = os.path.abspath(args.output) if args.output else os.path.join(dir, 'fplcs.csv')
+    outdir = os.path.dirname(outfile)
+    if outfile[-4:] != '.csv':
+        print('Please include the name of the file in outfile, i.e., \'path/to/[name].csv\'')
+        sys.exit(1)
 
     if os.path.isfile(outfile):
         if input(f'Are you sure you want to overwrite the file {os.path.abspath(outfile)}?\n[Y]es / [N]o\n').upper() != 'Y':
