@@ -2,13 +2,17 @@ library(tidyverse)
 library(ggplot2)
 library(devEMF)
 
-min_frac <- 2
-max_frac <- 29
-low_ml <- 5
+# 1 Import ----------------------------------------------------------------
+
+min_frac <- 2 # everything before this fraction will be 'Waste'
+max_frac <- 29 # everything after this fraction will be 'Waste'
+low_ml <- 5 # these values set the x-axis limits
 high_ml <- 25
 
 data <- read_csv('fplcs.csv', col_types = 'dcddcci') %>%
   mutate(inst_frac = if_else(inst_frac < min_frac, 'Waste', if_else(inst_frac > max_frac, 'Waste', as.character(inst_frac))))
+
+# 2 Plot ------------------------------------------------------------------
 
 data %>%
   filter(Channel == 'mAU') %>%

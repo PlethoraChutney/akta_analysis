@@ -6,8 +6,12 @@ import argparse
 import subprocess
 import shutil
 
+# 1 Hardcoding -----------------------------------------------------------------
+
 skip_rows = 1
 script_path = dir_path = os.path.dirname(os.path.realpath(__file__))
+
+# 2 Data import ----------------------------------------------------------------
 
 def get_file_list(directory, quiet):
     file_list = []
@@ -24,6 +28,8 @@ def get_file_list(directory, quiet):
         print(f'Found {len(file_list)} files')
 
     return file_list
+
+# * 2.1 Data tidying -----------------------------------------------------------
 
 def append_chroms(file_list, quiet):
     if not quiet:
@@ -85,7 +91,9 @@ def append_chroms(file_list, quiet):
         print('Done with csv...')
     return chroms
 
-if __name__ == '__main__':
+# 3 Main -----------------------------------------------------------------------
+
+def main():
     parser = argparse.ArgumentParser(description = 'A script to collect FPLC traces from GE AKTA FPLCs')
     parser.add_argument('directory', default = os.getcwd(), help = 'Which directory to pull all .csv files from, or a particular .csv file. Default is all files in the current directory')
     parser.add_argument('-o', '--output', help = 'Where to write the compiled traces. Default is fplcs.csv in the input directory')
@@ -114,6 +122,8 @@ if __name__ == '__main__':
     no_plots = args.no_plots
     wide_table = args.wide_table
 
+# * 3.1 csv generation ---------------------------------------------------------
+
     outfile = os.path.abspath(args.output) if args.output else os.path.join(dir, 'fplcs.csv')
     outdir = os.path.dirname(outfile)
     if outfile[-4:] != '.csv':
@@ -130,6 +140,8 @@ if __name__ == '__main__':
     if wide_table:
         compiled.pivot('mL', 'Channel', 'Signal').to_csv(outfile[:-4] + '_wide.csv')
 
+# * 3.2 Plots ------------------------------------------------------------------
+
     if not no_plots:
         if not quiet:
             print(f'Generating plots ({low_ml} to {high_ml}mL, fractions {min_frac} to {max_frac})...')
@@ -143,3 +155,6 @@ if __name__ == '__main__':
         shutil.copyfile(os.path.join(script_path, 'manual_plot_traces.R'), os.path.join(outdir, 'manual_plot_traces.R'))
     if not quiet:
         print('Done.')
+
+if __name__ == '__main__':
+    main()

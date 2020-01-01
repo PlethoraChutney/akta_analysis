@@ -1,6 +1,10 @@
 suppressMessages(library(tidyverse))
 library(ggplot2)
 
+# 1 Import ----------------------------------------------------------------
+
+# These values are all determined by options given to the python script.
+# Use the simpler manual_plot_traces.R script if you're changing these.
 args = commandArgs(trailingOnly = TRUE)
 no.ext <- str_sub(basename(args[1]), end = -5)
 out.dir <- dirname(args[1])
@@ -11,6 +15,10 @@ high_ml <- as.integer(args[5])
 
 data <- read_csv(args[1], col_types = 'dcddcci') %>%
   mutate(inst_frac = if_else(inst_frac < min_frac, 'Waste', if_else(inst_frac > max_frac, 'Waste', as.character(inst_frac))))
+
+# 2 Plot ------------------------------------------------------------------
+
+# * 2.1 Multi-experiment plots --------------------------------------------
 
 if (length(levels(factor(data$Sample))) > 1) {
 data %>%
@@ -35,6 +43,8 @@ ggsave(filename = file.path(out.dir, paste('all_samples_', no.ext, '.pdf', sep =
     geom_line()
   ggsave(filename = file.path(out.dir, paste('all_channels_', no.ext, '.pdf', sep = '')), width = 6, height = 4)
 }
+
+# * 2.2 mAU fraction plots ------------------------------------------------
 
 if (max_frac == 0) {
   data %>%
