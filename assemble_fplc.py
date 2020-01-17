@@ -16,13 +16,15 @@ script_path = dir_path = os.path.dirname(os.path.realpath(__file__))
 def get_file_list(directory, quiet):
     file_list = []
 
-    if os.path.isdir(directory):
-        for file in os.listdir(directory):
+    if len(directory) > 1:
+        file_list = [os.path.abspath(x) for x in directory]
+    elif os.path.isdir(directory[0]):
+        for file in os.listdir(directory[0]):
             if file.endswith(".csv"):
-                file_list.append(os.path.normpath(os.path.join(directory, file)))
-    elif os.path.isfile(directory):
-        if directory.endswith('.csv'):
-            file_list.append(os.path.normpath(directory))
+                file_list.append(os.path.normpath(os.path.join(directory[0], file)))
+    elif os.path.isfile(directory[0]):
+        if directory[0].endswith('.csv'):
+            file_list.append(os.path.normpath(directory[0]))
 
     if not quiet:
         print(f'Found {len(file_list)} files')
@@ -95,8 +97,8 @@ def append_chroms(file_list, quiet):
 
 def main():
     parser = argparse.ArgumentParser(description = 'A script to collect FPLC traces from GE AKTA FPLCs')
-    parser.add_argument('directory', default = os.getcwd(), help = 'Which directory to pull all .csv files from, or a particular .csv file. Default is all files in the current directory')
-    parser.add_argument('-o', '--output', help = 'Where to write the compiled traces. Default is fplcs.csv in the input directory')
+    parser.add_argument('file_list', help = 'Files to compare. If given a directory, all .csvs in that directory.', nargs = '+')
+    parser.add_argument('-o', '--output', help = 'Where to write the compiled traces. Default is fplcs.csv in the first input directory')
     parser.add_argument('-s', '--skiprows', default = 1, help = 'Number of rows to skip reading. Default 1', action = 'store', dest = 'skip_rows', type = int)
     parser.add_argument('-f', '--fractions', nargs = 2, default = ['0', '0'], help = 'Inclusive range of fractions to fill in. Default is not to fill any.')
     parser.add_argument('-m', '--ml', nargs = 2, default = ['5', '20'], help = 'Inclusive range for x-axis, in mL. Default is 5 to 20')
@@ -110,19 +112,15 @@ def main():
         sys.exit(0)
     args = parser.parse_args()
 
-    if os.path.isfile(args.directory):
-        dir = os.path.dirname(args.directory)
-        single_file = True
-    else:
-        dir = args.directory
-        single_file = False
+    quiet = args.quiet
+    file_list = get_file_list(args.file_list, quiet)
+    dir = os.path.dirname(file_list[0])
     dir = os.path.abspath(dir)
     skip_rows = args.skip_rows
     min_frac = str(args.fractions[0])
     max_frac = str(args.fractions[1])
     low_ml = str(args.ml[0])
     high_ml = str(args.ml[1])
-    quiet = args.quiet
     copy_manual = args.copy_manual
     no_plots = args.no_plots
     wide_table = args.wide_table
@@ -139,10 +137,6 @@ def main():
         if input(f'Are you sure you want to overwrite the file {os.path.abspath(outfile)}?\n[Y]es / [N]o\n').upper() != 'Y':
             sys.exit(0)
 
-    if single_file:
-        file_list = [args.directory]
-    else:
-        file_list = get_file_list(dir, quiet)
     compiled = append_chroms(file_list, quiet)
     compiled.to_csv(outfile, index = False)
     if wide_table:
