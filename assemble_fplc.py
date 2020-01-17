@@ -110,7 +110,12 @@ def main():
         sys.exit(0)
     args = parser.parse_args()
 
-    dir = args.directory if not os.path.isfile(args.directory) else os.path.dirname(args.directory)
+    if os.path.isfile(args.directory):
+        dir = os.path.dirname(args.directory)
+        single_file = True
+    else:
+        dir = args.directory
+        single_file = False
     dir = os.path.abspath(dir)
     skip_rows = args.skip_rows
     min_frac = str(args.fractions[0])
@@ -134,7 +139,10 @@ def main():
         if input(f'Are you sure you want to overwrite the file {os.path.abspath(outfile)}?\n[Y]es / [N]o\n').upper() != 'Y':
             sys.exit(0)
 
-    file_list = get_file_list(dir, quiet)
+    if single_file:
+        file_list = [args.directory]
+    else:
+        file_list = get_file_list(dir, quiet)
     compiled = append_chroms(file_list, quiet)
     compiled.to_csv(outfile, index = False)
     if wide_table:
