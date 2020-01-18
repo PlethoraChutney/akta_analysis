@@ -106,7 +106,7 @@ def main():
     parser.add_argument('--copy-manual', help = 'Copy the manual plotting Rscript for further tweaking', action = 'store_true')
     parser.add_argument('--no-plots', help = 'Don\'t make R plots.', action = 'store_true')
     parser.add_argument('--wide-table', help= 'Save an additional table that is in \'wide\' format.', action = 'store_true')
-    parser.add_argument('--mass-export', help = 'Analyze each input file seperately. Default false. Will not make wide table, will copy manual R script and make default plots. Ignores -o flag.', action = 'store_true')
+    parser.add_argument('--mass-export', help = 'Analyze each input file seperately. Default false. Will not make wide table, will copy manual R script and make default plots. Ignores -o, -s, -f, -m, -q flags.', action = 'store_true')
 
     if len(sys.argv) == 1:
         parser.print_help(sys.stderr)
@@ -142,9 +142,7 @@ def main():
     if mass_export:
         for file in file_list:
             newdir = file[:-4].replace(' ', '_')
-            print(newdir)
             os.mkdir(newdir)
-            # command = f'{os.path.join(script_path, "assemble_fplc.py")} "{file}" -s {skip_rows} -f {min_frac} {max_frac} -m {low_ml} {high_ml} --copy-manual -o {os.path.join(newdir, "fplcs.csv")}'
             subprocess.run(['python', os.path.join(script_path, "assemble_fplc.py"), file, '--copy-manual', '-o', os.path.join(newdir, "fplcs.csv")])
             shutil.move(file, os.path.join(newdir, file))
         sys.exit(0)
