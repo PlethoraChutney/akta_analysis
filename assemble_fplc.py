@@ -101,11 +101,12 @@ def main():
     parser.add_argument('-o', '--output', help = 'Where to write the compiled traces. Default is fplcs.csv in the first input directory')
     parser.add_argument('-s', '--skiprows', default = 1, help = 'Number of rows to skip reading. Default 1', action = 'store', dest = 'skip_rows', type = int)
     parser.add_argument('-f', '--fractions', nargs = 2, default = ['0', '0'], help = 'Inclusive range of fractions to fill in. Default is not to fill any.')
-    parser.add_argument('-m', '--ml', nargs = 2, default = ['5', '20'], help = 'Inclusive range for x-axis, in mL. Default is 5 to 20')
+    parser.add_argument('-m', '--ml', nargs = 2, default = ['5', '25'], help = 'Inclusive range for x-axis, in mL. Default is 5 to 25')
     parser.add_argument('-q', '--quiet', help = 'Don\'t print messages about progress', action = 'store_true')
     parser.add_argument('--copy-manual', help = 'Copy the manual plotting Rscript for further tweaking', action = 'store_true')
     parser.add_argument('--no-plots', help = 'Don\'t make R plots.', action = 'store_true')
     parser.add_argument('--wide-table', help= 'Save an additional table that is in \'wide\' format.', action = 'store_true')
+    parser.add_argument('--mass-export', help = 'Analyze each input file seperately. Default false. Will not make wide table, will copy manual R script and make default plots. Ignores -o flag.', action = 'store_true')
 
     if len(sys.argv) == 1:
         parser.print_help(sys.stderr)
@@ -124,6 +125,7 @@ def main():
     copy_manual = args.copy_manual
     no_plots = args.no_plots
     wide_table = args.wide_table
+    mass_export = args.mass_export
 
 # * 3.1 csv generation ---------------------------------------------------------
 
@@ -137,10 +139,20 @@ def main():
         if input(f'Are you sure you want to overwrite the file {os.path.abspath(outfile)}?\n[Y]es / [N]o\n').upper() != 'Y':
             sys.exit(0)
 
+    if mass_export:
+        for file in file_list:
+            newdir = file[:-4].replace(' ', '_')
+            print(newdir)
+            os.mkdir(newdir)
+            # command = f'{os.path.join(script_path, "assemble_fplc.py")} "{file}" -s {skip_rows} -f {min_frac} {max_frac} -m {low_ml} {high_ml} --copy-manual -o {os.path.join(newdir, "fplcs.csv")}'
+            subprocess.run(['python', os.path.join(script_path, "assemble_fplc.py"), file, '--copy-manual', '-o', os.path.join(newdir, "fplcs.csv")])
+            shutil.move(file, os.path.join(newdir, file))
+        sys.exit(0)
+
     compiled = append_chroms(file_list, quiet)
     compiled.to_csv(outfile, index = False)
     if wide_table:
-        compiled.pivot('mL', 'Channel', 'Signal').to_csv(outfile[:-4] + '_wide.csv')
+        compiled.pivot('mL', 'Channel', 'Signal').to_csv(newdir + '_wide.csv')
 
 # * 3.2 Plots ------------------------------------------------------------------
 
