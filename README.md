@@ -1,4 +1,9 @@
-# FPLC_processing
+# This script is now part of Appia
+This script is no longer being developed. Please visit
+https://github.com/PlethoraChutney/Appia
+for up-to-date chromatography processing scripts.
+
+## FPLC_processing
 
 This is a simple script that takes the exported traces from AKTA
 instruments and converts them to a long format. This format is suitable
